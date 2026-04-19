@@ -28,7 +28,7 @@ export function renderHeader() {
 
   header.innerHTML = `
     <nav class="site-header">
-      <a class="logo" href="#/">${PIN_LOGO}<span>视频站</span></a>
+      <a class="logo" href="#/">${PIN_LOGO}<span>VideoHub</span></a>
       <div class="nav-right">
         ${isGuest ? '' : '<a href="#/upload" class="btn btn-primary">上传</a>'}
         <div class="user-info">

@@ -14,10 +14,10 @@ function renderLogin() {
   main.innerHTML = `
     <div class="login-page">
       <div class="login-logo">${PIN_LOGO_LG}</div>
-      <h1>欢迎来到视频站</h1>
+      <h1>欢迎来到 VideoHub</h1>
       <p>使用 GitHub 账号登录浏览和上传视频</p>
       <a href="/api/auth/login" class="btn btn-github">${GITHUB_ICON} 使用 GitHub 登录</a>
-      <a href="#" class="guest-link" id="guest-login-link">游客登录（仅可观看和下载）</a>
+      <a href="#" class="guest-link" id="guest-login-link">游客登录</a>
     </div>
   `;
 
@@ -42,7 +42,7 @@ function renderFooter() {
     const footer = document.createElement('footer');
     footer.id = 'footer';
     footer.className = 'site-footer';
-    footer.innerHTML = 'R2-Page-Video &middot; Powered by Cloudflare Workers + R2';
+    footer.innerHTML = 'VideoHub &middot; Powered by Cloudflare';
     document.getElementById('app').appendChild(footer);
   }
 }
