@@ -21,8 +21,8 @@ Cloudflare Workers app serving a video hosting site. Two halves: a **Hono API ba
 
 ### Backend (`src/`)
 
-- **Entry**: `index.ts` — mounts three Hono route groups under `/api/auth`, `/api/videos`, `/api/upload`
-- **Auth flow**: GitHub OAuth → JWT in HttpOnly cookie. `middleware/auth.ts` exports `authRequired` (returns 401) and `authOptional` (passes through). JWT is hand-rolled via Web Crypto HMAC-SHA256 in `services/jwt.ts` — not a library.
+- **Entry**: `index.ts` — mounts three Hono route groups under `/api/auth`, `/api/videos`, `/api/upload`. Also runs idempotent `CREATE TABLE IF NOT EXISTS` on the first `/api/*` request, so `npm run db:init` is optional for fresh environments.
+- **Auth flow**: GitHub OAuth → JWT in HttpOnly cookie. `middleware/auth.ts` exports `authRequired` (401 on missing/invalid), `authOptional` (passes through), and `notGuest` (403 if `is_guest` claim is set). Uploads use `authRequired + notGuest`; a `/api/auth/guest` endpoint issues a JWT with `is_guest: true` for read-only browsing. JWT is hand-rolled via Web Crypto HMAC-SHA256 in `services/jwt.ts` — not a library.
 - **Upload flow**: Two-step presigned URL process. Client calls `/api/upload/presign` to get R2 presigned PUT URLs (via `aws4fetch`), uploads directly to R2 bypassing the Worker, then calls `/api/upload/complete` to write metadata to D1.
 - **Video streaming**: `routes/videos.ts` handles Range requests for `/:id/stream`, parsing the Range header and passing it to `R2Bucket.get()` with offset/length options.
 - **Bindings**: All Cloudflare bindings typed in `types.ts` as `Env` interface — `R2_BUCKET` (R2Bucket), `DB` (D1Database), plus string secrets.
@@ -36,7 +36,9 @@ Cloudflare Workers app serving a video hosting site. Two halves: a **Hono API ba
 
 ### Design System
 
-`DESIGN.md` contains the Pinterest-inspired design spec. UI uses warm neutrals (#e5e5e0, #62625b), brand red (#e60023), 16px border-radius, CSS column-based masonry grid, no shadows. Reference this file before any UI changes.
+`DESIGN.md` contains the Pinterest-inspired design spec. UI uses warm neutrals (#e5e5e0, #62625b), brand red (#e60023), 16px border-radius, no shadows. Reference this file before any UI changes.
+
+The home-page grid is **JS-distributed flex columns**, not CSS `column-count`: `public/js/pages/home.js` picks a column count from viewport width and round-robins cards into child `.masonry-column` divs, re-laying out on `resize`. This avoids the `column-fill: balance` quirk where small item counts get redistributed into fewer visible columns. Breakpoints (1/2/3/4/5/6 cols) live in `getColumnCount()` — not in CSS media queries.
 
 ### Data Model
 
@@ -45,7 +47,9 @@ Single `videos` table in D1. Video files stored in R2 at `videos/{uuid}/{filenam
 ## Key Constraints
 
 - Worker free tier: 10ms CPU time per request, 100MB request body limit — this is why uploads use presigned URLs to bypass the Worker
-- R2 bucket name `r2-page-video` is hardcoded in the presign endpoint (`routes/upload.ts`), not read from the binding
-- All `/api/videos/*` and `/api/upload/*` routes require auth; `/api/auth/*` routes are public
+- R2 bucket name `r2-page-video` is hardcoded in the presign endpoint (`routes/upload.ts`), not read from the binding. Presign targets `https://{CF_ACCOUNT_ID}.r2.cloudflarestorage.com` directly via `aws4fetch` — the `R2_BUCKET` binding is only used server-side for streaming/download/delete.
+- `wrangler.jsonc` sets `assets.run_worker_first: ["/api/*"]` and `not_found_handling: "single-page-application"` — this is what makes `/api/*` reach Hono while everything else falls back to `public/index.html`
+- All `/api/videos/*` routes require auth; `/api/upload/*` requires auth **and** non-guest; `/api/auth/*` is public
+- Upload cap: 500MB, enforced in `routes/upload.ts` presign handler; filenames are sanitized to `[a-zA-Z0-9._\-\u4e00-\u9fff]` (CJK allowed)
 - Frontend is plain JS modules (no bundler) — `type="module"` script tags in `index.html`
 - UI text is in Chinese (zh-CN)
