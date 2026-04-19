@@ -24,7 +24,6 @@ async function loadVideos() {
       grid.innerHTML = `
         <div class="empty-state">
           <h2>还没有视频</h2>
-          <p>点击上方「上传」开始添加视频</p>
         </div>
       `;
       pagination.innerHTML = '';
