@@ -1,0 +1,5 @@
+GITHUB_CLIENT_SECRET=your_github_client_secret
+JWT_SECRET=your_jwt_secret_at_least_32_characters_long
+R2_ACCESS_KEY_ID=your_r2_access_key_id
+R2_SECRET_ACCESS_KEY=your_r2_secret_access_key
+CF_ACCOUNT_ID=your_cloudflare_account_id

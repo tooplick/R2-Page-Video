@@ -1,0 +1,32 @@
+{
+  "name": "r2-page-video",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute r2-page-video-db --file=src/db/schema.sql"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tooplick/R2-Page-Video.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/tooplick/R2-Page-Video/issues"
+  },
+  "homepage": "https://github.com/tooplick/R2-Page-Video#readme",
+  "dependencies": {
+    "aws4fetch": "^1.0.20",
+    "hono": "^4.12.14"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260418.1",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.83.0"
+  }
+}
