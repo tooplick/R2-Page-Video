@@ -3,6 +3,48 @@ import { createVideoCard } from '../components/video-card.js';
 
 let currentPage = 1;
 const limit = 30;
+let cachedVideos = [];
+let resizeRaf = null;
+
+function getColumnCount() {
+  const w = window.innerWidth;
+  if (w <= 576) return 1;
+  if (w <= 768) return 2;
+  if (w <= 890) return 3;
+  if (w <= 1312) return 4;
+  if (w <= 1680) return 5;
+  return 6;
+}
+
+function layoutGrid(grid, videos) {
+  const cols = Math.min(getColumnCount(), Math.max(videos.length, 1));
+  grid.innerHTML = '';
+
+  const columns = [];
+  for (let i = 0; i < cols; i++) {
+    const col = document.createElement('div');
+    col.className = 'masonry-column';
+    columns.push(col);
+    grid.appendChild(col);
+  }
+
+  videos.forEach((video, i) => {
+    columns[i % cols].appendChild(createVideoCard(video));
+  });
+}
+
+function onResize() {
+  if (resizeRaf) cancelAnimationFrame(resizeRaf);
+  resizeRaf = requestAnimationFrame(() => {
+    const grid = document.getElementById('masonry-grid');
+    if (grid && cachedVideos.length) layoutGrid(grid, cachedVideos);
+  });
+}
+
+if (typeof window !== 'undefined' && !window.__masonryResizeBound) {
+  window.addEventListener('resize', onResize);
+  window.__masonryResizeBound = true;
+}
 
 export async function renderHome() {
   const main = document.getElementById('main');
@@ -21,6 +63,7 @@ async function loadVideos() {
     if (!data) return;
 
     if (data.videos.length === 0 && currentPage === 1) {
+      cachedVideos = [];
       grid.innerHTML = `
         <div class="empty-state">
           <h2>还没有视频</h2>
@@ -30,10 +73,8 @@ async function loadVideos() {
       return;
     }
 
-    grid.innerHTML = '';
-    for (const video of data.videos) {
-      grid.appendChild(createVideoCard(video));
-    }
+    cachedVideos = data.videos;
+    layoutGrid(grid, cachedVideos);
 
     const totalPages = Math.ceil(data.total / limit);
     if (totalPages > 1) {

@@ -269,13 +269,20 @@ main {
 
 /* ========== Masonry Video Grid ========== */
 .masonry-grid {
-  column-count: 5;
-  column-gap: 16px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.masonry-column {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .pin-card {
-  break-inside: avoid;
-  margin-bottom: 16px;
   border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
@@ -647,44 +654,11 @@ main {
 
 /* ========== Responsive: Masonry Columns ========== */
 @media (max-width: 576px) {
-  .masonry-grid {
-    column-count: 1;
-  }
   main {
     padding: 8px 8px 24px;
   }
   .site-header {
     padding: 0 8px;
-  }
-}
-
-@media (min-width: 577px) and (max-width: 768px) {
-  .masonry-grid {
-    column-count: 2;
-  }
-}
-
-@media (min-width: 769px) and (max-width: 890px) {
-  .masonry-grid {
-    column-count: 3;
-  }
-}
-
-@media (min-width: 891px) and (max-width: 1312px) {
-  .masonry-grid {
-    column-count: 4;
-  }
-}
-
-@media (min-width: 1313px) and (max-width: 1680px) {
-  .masonry-grid {
-    column-count: 5;
-  }
-}
-
-@media (min-width: 1681px) {
-  .masonry-grid {
-    column-count: 6;
   }
 }
 
