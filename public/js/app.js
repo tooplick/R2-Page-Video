@@ -1,4 +1,4 @@
-import { checkAuth, getUser, login } from './auth.js';
+import { checkAuth, getUser, login, loginAsGuest, isGuest } from './auth.js';
 import { renderHeader } from './components/header.js';
 import { renderHome } from './pages/home.js';
 import { renderVideo } from './pages/video.js';
@@ -15,10 +15,26 @@ function renderLogin() {
     <div class="login-page">
       <div class="login-logo">${PIN_LOGO_LG}</div>
       <h1>欢迎来到视频站</h1>
-      <p>使用 GitHub 账号登录后浏览和上传视频</p>
+      <p>使用 GitHub 账号登录浏览和上传视频</p>
       <a href="/api/auth/login" class="btn btn-github">${GITHUB_ICON} 使用 GitHub 登录</a>
+      <a href="#" class="guest-link" id="guest-login-link">游客登录（仅可观看和下载）</a>
     </div>
   `;
+
+  document.getElementById('guest-login-link').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const link = e.currentTarget;
+    if (link.classList.contains('disabled')) return;
+    link.classList.add('disabled');
+    try {
+      await loginAsGuest();
+      window.location.hash = '#/';
+      router();
+    } catch (err) {
+      link.classList.remove('disabled');
+      alert('游客登录失败：' + err.message);
+    }
+  });
 }
 
 function renderFooter() {
@@ -56,6 +72,10 @@ async function router() {
     const id = hash.replace('#/video/', '');
     await renderVideo(id);
   } else if (hash === '#/upload') {
+    if (isGuest()) {
+      window.location.hash = '#/';
+      return;
+    }
     renderUpload();
   } else {
     document.getElementById('main').innerHTML = '<div class="empty-state"><h2>页面不存在</h2></div>';

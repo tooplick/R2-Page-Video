@@ -91,7 +91,31 @@ auth.get('/me', async (c) => {
     id: payload.sub,
     username: payload.username,
     avatar: payload.avatar,
+    is_guest: payload.is_guest === true,
   });
+});
+
+auth.post('/guest', async (c) => {
+  const token = await signJwt(
+    {
+      sub: 0,
+      username: '游客',
+      avatar: '',
+      is_guest: true,
+      exp: Math.floor(Date.now() / 1000) + 7 * 24 * 3600,
+    },
+    c.env.JWT_SECRET
+  );
+
+  setCookie(c, 'token', token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'Lax',
+    path: '/',
+    maxAge: 7 * 24 * 3600,
+  });
+
+  return c.json({ ok: true, is_guest: true });
 });
 
 auth.post('/logout', (c) => {

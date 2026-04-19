@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { authRequired } from '../middleware/auth';
+import { authRequired, notGuest } from '../middleware/auth';
 import { getPresignedUrl } from '../services/r2';
 import { insertVideo } from '../services/d1';
 import type { Env, JwtPayload } from '../types';
@@ -8,7 +8,7 @@ type Variables = { user: JwtPayload };
 
 const upload = new Hono<{ Bindings: Env; Variables: Variables }>();
 
-upload.use('/*', authRequired);
+upload.use('/*', authRequired, notGuest);
 
 upload.post('/presign', async (c) => {
   const body = await c.req.json<{

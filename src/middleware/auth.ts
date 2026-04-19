@@ -36,3 +36,13 @@ export const authOptional = createMiddleware<{ Bindings: Env; Variables: Variabl
     await next();
   }
 );
+
+export const notGuest = createMiddleware<{ Bindings: Env; Variables: Variables }>(
+  async (c, next) => {
+    const user = c.get('user');
+    if (!user || user.is_guest) {
+      return c.json({ error: '游客无权执行此操作，请使用 GitHub 登录' }, 403);
+    }
+    await next();
+  }
+);

@@ -22,6 +22,22 @@ export async function login() {
   window.location.href = '/api/auth/login';
 }
 
+export async function loginAsGuest() {
+  const res = await fetch('/api/auth/guest', {
+    method: 'POST',
+    credentials: 'same-origin',
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || '游客登录失败');
+  }
+  await checkAuth();
+}
+
+export function isGuest() {
+  return !!(authState && authState.is_guest);
+}
+
 export async function logout() {
   try {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });

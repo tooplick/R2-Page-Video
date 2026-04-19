@@ -31,6 +31,7 @@ export interface JwtPayload {
   avatar: string;
   exp: number;
   iat: number;
+  is_guest?: boolean;
 }
 
 export interface GitHubUser {
