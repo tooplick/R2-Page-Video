@@ -19,11 +19,11 @@
     {
       "binding": "DB",
       "database_name": "r2-page-video-db",
-      "database_id": ""
+      "database_id": "0c46a84d-c731-4af9-94ff-8a8303bf12b4"
     }
   ],
   "vars": {
-    "GITHUB_CLIENT_ID": "",
-    "GITHUB_REDIRECT_URI": ""
+    "GITHUB_CLIENT_ID": "Ov23lih66al45HNDrEVz",
+    "GITHUB_REDIRECT_URI": "https://video.ygking.top/api/auth/callback"
   }
 }
