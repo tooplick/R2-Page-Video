@@ -3,6 +3,8 @@ import { cors } from 'hono/cors';
 import auth from './routes/auth';
 import videos from './routes/videos';
 import upload from './routes/upload';
+import admin from './routes/admin';
+import settings from './routes/settings';
 import type { Env } from './types';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -35,6 +37,13 @@ app.use('/api/*', async (c, next) => {
         )`),
         c.env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_videos_created_at ON videos(created_at DESC)'),
         c.env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_videos_uploader ON videos(uploader_github_id)'),
+        c.env.DB.prepare(`CREATE TABLE IF NOT EXISTS settings (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL,
+          updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )`),
+        c.env.DB.prepare(`INSERT OR IGNORE INTO settings (key, value) VALUES ('max_single_video_size', '1073741824')`),
+        c.env.DB.prepare(`INSERT OR IGNORE INTO settings (key, value) VALUES ('max_total_storage', '10200547328')`),
       ]);
     } catch {
       // already exists
@@ -47,6 +56,8 @@ app.use('/api/*', async (c, next) => {
 app.route('/api/auth', auth);
 app.route('/api/videos', videos);
 app.route('/api/upload', upload);
+app.route('/api/admin', admin);
+app.route('/api/settings', settings);
 
 app.onError((err, c) => {
   console.error(err);

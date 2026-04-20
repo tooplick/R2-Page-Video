@@ -1,13 +1,17 @@
-import { apiPost } from '../api.js';
+import { apiGet, apiPost } from '../api.js';
 
 let thumbnailBlob = null;
 let videoFile = null;
+let quotaInfo = null;
+
+const GIB = 1024 * 1024 * 1024;
 
 export function renderUpload() {
   const main = document.getElementById('main');
   main.innerHTML = `
     <div class="upload-page">
       <h1>上传视频</h1>
+      <p class="quota-tip" id="quota-tip">加载配额信息...</p>
       <form id="upload-form">
         <div class="form-group">
           <label>视频文件</label>
@@ -82,9 +86,39 @@ export function renderUpload() {
   });
 
   document.getElementById('upload-form').addEventListener('submit', handleUpload);
+
+  loadQuota();
+}
+
+async function loadQuota() {
+  const tip = document.getElementById('quota-tip');
+  try {
+    quotaInfo = await apiGet('/api/settings');
+    if (!quotaInfo || !tip) return;
+    const singleGb = (quotaInfo.maxSingleVideoSize / GIB).toFixed(2);
+    const totalGb = (quotaInfo.maxTotalStorage / GIB).toFixed(2);
+    const usedGb = (quotaInfo.currentUsage / GIB).toFixed(2);
+    tip.textContent = `已用 ${usedGb} / ${totalGb} GB · 单文件 ≤ ${singleGb} GB`;
+  } catch {
+    if (tip) tip.textContent = '';
+  }
 }
 
 function handleFileSelect(file, fileLabel, titleInput) {
+  if (quotaInfo) {
+    if (file.size > quotaInfo.maxSingleVideoSize) {
+      const limitGb = (quotaInfo.maxSingleVideoSize / GIB).toFixed(2);
+      alert(`文件超过单文件限制 ${limitGb} GB`);
+      return;
+    }
+    if (quotaInfo.currentUsage + file.size > quotaInfo.maxTotalStorage) {
+      const totalGb = (quotaInfo.maxTotalStorage / GIB).toFixed(2);
+      const usedGb = (quotaInfo.currentUsage / GIB).toFixed(2);
+      alert(`存储空间不足（已用 ${usedGb} / ${totalGb} GB）`);
+      return;
+    }
+  }
+
   videoFile = file;
   fileLabel.className = 'selected-file';
   fileLabel.textContent = `${file.name} (${formatSize(file.size)})`;

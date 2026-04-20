@@ -20,6 +20,7 @@ export function renderHeader() {
   }
 
   const isGuest = user.is_guest === true;
+  const isAdmin = user.is_admin === true;
   const avatar = isGuest ? GUEST_AVATAR : user.avatar;
   const displayName = isGuest ? '游客' : user.username;
   const userLabel = isGuest
@@ -30,6 +31,7 @@ export function renderHeader() {
     <nav class="site-header">
       <a class="logo" href="#/">${PIN_LOGO}<span>VideoHub</span></a>
       <div class="nav-right">
+        ${isAdmin ? '<a href="#/admin" class="btn btn-secondary">管理</a>' : ''}
         ${isGuest ? '' : '<a href="#/upload" class="btn btn-primary">上传</a>'}
         <div class="user-info">
           <img class="avatar" src="${avatar}" alt="${displayName}">

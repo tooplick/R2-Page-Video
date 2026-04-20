@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { authRequired, notGuest } from '../middleware/auth';
 import { getPresignedUrl } from '../services/r2';
 import { insertVideo } from '../services/d1';
+import { getSettings, getCurrentUsage } from '../services/settings';
 import type { Env, JwtPayload } from '../types';
 
 type Variables = { user: JwtPayload };
@@ -25,9 +26,20 @@ upload.post('/presign', async (c) => {
     return c.json({ error: '仅支持视频文件' }, 400);
   }
 
-  const maxSize = 500 * 1024 * 1024; // 500MB
-  if (body.fileSize > maxSize) {
-    return c.json({ error: '文件大小不能超过 500MB' }, 400);
+  const [limits, currentUsage] = await Promise.all([
+    getSettings(c.env.DB),
+    getCurrentUsage(c.env.DB),
+  ]);
+
+  if (body.fileSize > limits.maxSingleVideoSize) {
+    const limitGb = (limits.maxSingleVideoSize / (1024 * 1024 * 1024)).toFixed(2);
+    return c.json({ error: `单文件大小不能超过 ${limitGb} GB` }, 400);
+  }
+
+  if (currentUsage + body.fileSize > limits.maxTotalStorage) {
+    const usedGb = (currentUsage / (1024 * 1024 * 1024)).toFixed(2);
+    const totalGb = (limits.maxTotalStorage / (1024 * 1024 * 1024)).toFixed(2);
+    return c.json({ error: `存储空间不足（已用 ${usedGb} / ${totalGb} GB）` }, 400);
   }
 
   const videoId = crypto.randomUUID();

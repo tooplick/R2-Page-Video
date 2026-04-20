@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { setCookie, getCookie, deleteCookie } from 'hono/cookie';
 import { exchangeCodeForToken, getGitHubUser } from '../services/github';
 import { signJwt, verifyJwt } from '../services/jwt';
+import { getAdminUserId } from '../services/settings';
 import type { Env, JwtPayload } from '../types';
 
 const auth = new Hono<{ Bindings: Env }>();
@@ -87,11 +88,15 @@ auth.get('/me', async (c) => {
     return c.json({ error: '登录已过期' }, 401);
   }
 
+  const isGuest = payload.is_guest === true;
+  const adminId = isGuest ? null : await getAdminUserId(c.env.DB);
+
   return c.json({
     id: payload.sub,
     username: payload.username,
     avatar: payload.avatar,
-    is_guest: payload.is_guest === true,
+    is_guest: isGuest,
+    is_admin: adminId !== null && adminId === payload.sub,
   });
 });
 

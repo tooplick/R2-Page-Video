@@ -38,6 +38,10 @@ export function isGuest() {
   return !!(authState && authState.is_guest);
 }
 
+export function isAdmin() {
+  return !!(authState && authState.is_admin);
+}
+
 export async function logout() {
   try {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });

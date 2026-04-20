@@ -27,8 +27,14 @@ async function apiRequest(path, options = {}) {
   }
 
   if (!response.ok) {
-    const text = await response.text().catch(() => '未知错误');
-    throw new Error(text || `请求失败 (${response.status})`);
+    let message = '';
+    try {
+      const data = await response.json();
+      message = data?.error || '';
+    } catch {
+      message = await response.text().catch(() => '');
+    }
+    throw new Error(message || `请求失败 (${response.status})`);
   }
 
   if (response.status === 204) {
@@ -44,6 +50,10 @@ export async function apiGet(path) {
 
 export async function apiPost(path, body) {
   return apiRequest(path, { method: 'POST', body });
+}
+
+export async function apiPut(path, body) {
+  return apiRequest(path, { method: 'PUT', body });
 }
 
 export async function apiDelete(path) {
