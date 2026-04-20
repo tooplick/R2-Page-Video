@@ -687,13 +687,13 @@ main {
   to { transform: rotate(360deg); }
 }
 
-/* ========== Responsive: Header ========== */
+/* ========== Responsive: Header & Masonry ========== */
 @media (max-width: 576px) {
   main {
     padding: 8px 8px 24px;
   }
+
   .site-header {
-    padding: 0 8px;
     height: auto;
     min-height: 56px;
     flex-wrap: wrap;
@@ -709,10 +709,7 @@ main {
   .site-header .user-info {
     order: 1;
   }
-}
 
-/* ========== Responsive: Masonry Columns ========== */
-@media (max-width: 576px) {
   .masonry-column {
     min-width: 0;
   }
