@@ -13,7 +13,7 @@ export function renderHeader() {
   if (!user) {
     header.innerHTML = `
       <nav class="site-header">
-        <a class="logo" href="#/">${PIN_LOGO}<span>视频站</span></a>
+        <a class="logo" href="#/">${PIN_LOGO}<span>VideoHub</span></a>
       </nav>
     `;
     return;

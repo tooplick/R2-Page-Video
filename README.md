@@ -4,12 +4,11 @@
 
 ## 功能
 
-- **视频上传** — 客户端直传 R2（预签名 URL），支持 500MB 以内视频
-- **视频播放** — HTML5 播放器，支持 Range 请求拖动进度条
-- **视频下载** — 一键下载原始视频文件
-- **封面自动生成** — 上传时自动截取视频帧作为封面，可手动选择帧
-- **GitHub OAuth 登录** — 所有功能需登录，任何 GitHub 用户可上传
-- **Pinterest 瀑布流** — Masonry 网格布局，响应式 1-6 列自适应
+- **视频上传** — 客户端直传 R2（预签名 URL）绕过 Worker 100MB 请求体上限
+- **可配置配额** — 管理员可在线调整「单文件大小上限」与「总存储空间上限」（默认 1 GiB / 9.5 GiB）
+- **视频播放** — HTML5 播放器 + Range 请求，播放页按视频真实比例渲染（横屏/竖屏自适应）
+- **GitHub OAuth 登录 / 游客模式** — 完整功能需 GitHub 登录；游客可只读浏览
+- **自声明管理员** — 首个登录后访问 `#/admin` 的用户自动成为管理员，之后仅管理员能调整配额
 
 ## 技术栈
 
@@ -17,11 +16,11 @@
 |---|------|
 | 运行时 | Cloudflare Workers |
 | 后端框架 | Hono v4 |
-| 前端 | Vanilla HTML/CSS/JS (SPA) |
+| 前端 | Vanilla HTML/CSS/JS|
 | 视频存储 | Cloudflare R2 |
-| 元数据 | Cloudflare D1 (SQLite) |
-| 认证 | GitHub OAuth + JWT Cookie |
-| 大文件上传 | aws4fetch 预签名 URL |
+| 元数据 | Cloudflare D1（SQLite） |
+| 认证 | GitHub OAuth + 自签 JWT（HttpOnly Cookie） |
+| 大文件上传 | aws4fetch 预签名 PUT URL |
 
 ## 部署
 
@@ -43,11 +42,13 @@ npx wrangler r2 bucket create r2-page-video
 
 将 `wrangler d1 create` 输出的 `database_id` 填入 `wrangler.jsonc`。
 
-### 3. 初始化数据库
+### 3. 初始化数据库（可选）
 
 ```bash
 npx wrangler d1 execute r2-page-video-db --file=src/db/schema.sql
 ```
+
+> 也可跳过 — 首个 `/api/*` 请求会执行 `CREATE TABLE IF NOT EXISTS`，幂等。
 
 ### 4. 注册 GitHub OAuth App
 
@@ -92,6 +93,12 @@ npx wrangler secret put CF_ACCOUNT_ID
 npm run deploy
 ```
 
+### 9. 认领管理员
+
+部署后用 GitHub 登录，手动访问 `https://<your-domain>/#/admin` 即自动成为管理员，头部出现「管理」入口，可在线调整配额。
+
+> 换管理员：`npx wrangler d1 execute r2-page-video-db --command "DELETE FROM settings WHERE key='admin_user_id'"`，下一个访问 `#/admin` 的登录用户成为新管理员。
+
 ## 本地开发
 
 ```bash
@@ -100,29 +107,45 @@ cp .dev.vars.example .dev.vars
 
 # 本地启动
 npm run dev
+
+# 类型检查（项目无测试套件）
+npx tsc --noEmit
 ```
 
 ## 项目结构
 
 ```
-├── public/                 # 静态资源（Workers Static Assets 托管）
-│   ├── index.html          # SPA 入口
-│   ├── css/style.css       # Pinterest 风格样式
-│   └── js/                 # 前端模块
-│       ├── app.js          # SPA 路由
-│       ├── api.js          # API 请求封装
-│       ├── auth.js         # 登录状态管理
-│       ├── pages/          # 页面（首页、播放、上传）
-│       └── components/     # 组件（导航栏、视频卡片）
-├── src/                    # Worker 后端
-│   ├── index.ts            # Hono 应用入口
-│   ├── types.ts            # TypeScript 类型
-│   ├── routes/             # API 路由（auth、videos、upload）
-│   ├── middleware/          # JWT 认证中间件
-│   ├── services/           # 业务逻辑（GitHub、D1、R2、JWT）
-│   └── db/schema.sql       # 数据库建表
-├── wrangler.jsonc          # Cloudflare Workers 配置
-└── DESIGN.md               # Pinterest 风格设计规范
+├── public/                    # 静态资源（Workers Static Assets 托管）
+│   ├── index.html             # SPA 入口
+│   ├── css/style.css          # Pinterest 风格样式
+│   └── js/                    # 前端模块
+│       ├── app.js             # SPA 路由（#/ #/video/:id #/upload #/admin #/login）
+│       ├── api.js             # fetch 封装 + 401 事件
+│       ├── auth.js            # getUser / isGuest / isAdmin 状态管理
+│       ├── pages/             # home / video / upload / admin
+│       └── components/        # header / video-card
+├── src/                       # Worker 后端
+│   ├── index.ts               # Hono 入口 + 首次请求幂等建表
+│   ├── types.ts               # Env / Video / JwtPayload
+│   ├── routes/
+│   │   ├── auth.ts            # GitHub OAuth、/me、游客登录
+│   │   ├── videos.ts          # 列表、详情、流式播放、下载、删除
+│   │   ├── upload.ts          # 预签名 + 完成回调（动态配额校验）
+│   │   ├── admin.ts           # POST /claim 自声明管理员
+│   │   └── settings.ts        # GET/PUT 配额
+│   ├── middleware/
+│   │   ├── auth.ts            # authRequired / authOptional / notGuest
+│   │   └── admin.ts           # adminRequired
+│   ├── services/
+│   │   ├── github.ts          # OAuth token 换取 + 用户信息
+│   │   ├── jwt.ts             # Web Crypto HMAC-SHA256 自签
+│   │   ├── d1.ts              # videos 表 CRUD
+│   │   ├── r2.ts              # 预签名 URL + Range 解析
+│   │   └── settings.ts        # 配额读写、用量统计、管理员认领
+│   └── db/schema.sql          # videos + settings 表
+├── wrangler.jsonc             # Cloudflare Workers 配置
+├── DESIGN.md                  # Pinterest 风格设计规范
+└── CLAUDE.md                  # 给 Claude Code 的项目上下文
 ```
 
 ## License

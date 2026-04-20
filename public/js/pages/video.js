@@ -1,7 +1,8 @@
 import { apiGet, apiDelete } from '../api.js';
 import { getUser } from '../auth.js';
+import { showConfirm } from '../components/modal.js';
 
-const DEFAULT_TITLE = '视频站';
+const DEFAULT_TITLE = 'VideoHub';
 
 export async function renderVideo(id) {
   const main = document.getElementById('main');
@@ -56,7 +57,14 @@ export async function renderVideo(id) {
 
     if (isOwner) {
       document.getElementById('delete-btn').addEventListener('click', async () => {
-        if (!confirm('确定要删除这个视频吗？')) return;
+        const confirmed = await showConfirm({
+          title: '删除这个视频？',
+          message: '此操作不可撤销，视频文件和封面都会被永久删除。',
+          confirmText: '删除',
+          cancelText: '取消',
+          danger: true,
+        });
+        if (!confirmed) return;
         try {
           await apiDelete(`/api/videos/${video.id}`);
           window.location.hash = '#/';

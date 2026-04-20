@@ -5,6 +5,7 @@ const GIB = 1024 * 1024 * 1024;
 
 const CHECK_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 const LOCK_ICON = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+const BACK_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
 
 export async function renderAdmin() {
   const main = document.getElementById('main');
@@ -53,6 +54,7 @@ function renderError(main, message) {
 function renderNoAccess(main) {
   main.innerHTML = `
     <div class="admin-page">
+      <a href="#/" class="back-link">${BACK_ICON}<span>返回首页</span></a>
       <div class="no-access">
         <div class="no-access-icon">${LOCK_ICON}</div>
         <h2>无权访问</h2>
@@ -71,8 +73,9 @@ function renderForm(main, data, newlyClaimed) {
 
   main.innerHTML = `
     <div class="admin-page">
+      <a href="#/" class="back-link">${BACK_ICON}<span>返回首页</span></a>
       <header class="admin-header">
-        <h1>管理设置</h1>
+        <h1>设置</h1>
         <p class="admin-subtitle">配置上传限额与查看存储使用情况</p>
       </header>
 
@@ -114,10 +117,8 @@ function renderForm(main, data, newlyClaimed) {
             </div>
             <p class="form-hint">所有视频累计占用上限</p>
           </div>
-          <div class="form-actions">
-            <p class="settings-status" id="settings-status"></p>
-            <button type="submit" class="btn btn-primary" id="save-btn">保存</button>
-          </div>
+          <p class="settings-status" id="settings-status"></p>
+          <button type="submit" class="btn btn-primary" id="save-btn" style="margin-top:20px;padding:10px 20px;font-size:14px;font-weight:700;">保存</button>
         </form>
       </section>
     </div>

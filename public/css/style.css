@@ -36,6 +36,38 @@ body {
   line-height: 1.4;
 }
 
+/* ========== Scrollbars ========== */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-light) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.15s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-disabled);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 #app {
   min-height: 100vh;
   display: flex;
@@ -879,7 +911,7 @@ main {
 .settings-status {
   font-size: 13px;
   min-height: 18px;
-  flex: 1;
+  margin-top: 8px;
 }
 
 .settings-status.success {
@@ -889,6 +921,25 @@ main {
 
 .settings-status.error {
   color: var(--error-red);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px 6px 8px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.back-link:hover {
+  background: var(--surface-sand);
+  color: var(--text-primary);
 }
 
 .no-access {
@@ -928,4 +979,73 @@ main {
   color: var(--text-secondary);
   font-size: 13px;
   margin-bottom: 16px;
+}
+
+/* ========== Modal Dialog ========== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+  transition: background 0.16s ease;
+}
+
+.modal-overlay.modal-open {
+  background: rgba(33, 25, 34, 0.5);
+}
+
+.modal-overlay.modal-closing {
+  background: rgba(0, 0, 0, 0);
+}
+
+.modal {
+  background: var(--bg);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  max-width: 380px;
+  width: 100%;
+  transform: translateY(8px) scale(0.98);
+  opacity: 0;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.modal-overlay.modal-open .modal {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.modal-message {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.modal-btn {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.modal-btn:focus-visible {
+  outline: 2px solid var(--focus-blue);
+  outline-offset: 2px;
 }
