@@ -19,7 +19,7 @@ settings.get('/', async (c) => {
   const user = c.get('user');
   const [limits, currentUsage, adminId] = await Promise.all([
     getSettings(c.env.DB),
-    getCurrentUsage(c.env.DB),
+    getCurrentUsage(c.env),
     getAdminUserId(c.env.DB),
   ]);
   return c.json({

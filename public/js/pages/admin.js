@@ -1,7 +1,7 @@
 import { apiGet, apiPost, apiPut } from '../api.js';
 import { checkAuth } from '../auth.js';
 
-const GIB = 1024 * 1024 * 1024;
+const GB = 1000 * 1000 * 1000;
 
 const CHECK_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 const LOCK_ICON = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
@@ -65,10 +65,10 @@ function renderNoAccess(main) {
 }
 
 function renderForm(main, data, newlyClaimed) {
-  const singleGb = (data.maxSingleVideoSize / GIB).toFixed(2);
-  const totalGb = (data.maxTotalStorage / GIB).toFixed(2);
-  const usedGb = (data.currentUsage / GIB).toFixed(2);
-  const remainingGb = Math.max(0, (data.maxTotalStorage - data.currentUsage) / GIB).toFixed(2);
+  const singleGb = (data.maxSingleVideoSize / GB).toFixed(2);
+  const totalGb = (data.maxTotalStorage / GB).toFixed(2);
+  const usedGb = (data.currentUsage / GB).toFixed(2);
+  const remainingGb = Math.max(0, (data.maxTotalStorage - data.currentUsage) / GB).toFixed(2);
   const usedPct = Math.min(100, (data.currentUsage / data.maxTotalStorage) * 100);
 
   main.innerHTML = `
@@ -144,8 +144,8 @@ function renderForm(main, data, newlyClaimed) {
 
     try {
       await apiPut('/api/settings', {
-        maxSingleVideoSize: Math.floor(singleGbVal * GIB),
-        maxTotalStorage: Math.floor(totalGbVal * GIB),
+        maxSingleVideoSize: Math.floor(singleGbVal * GB),
+        maxTotalStorage: Math.floor(totalGbVal * GB),
       });
       status.textContent = '已保存';
       status.className = 'settings-status success';

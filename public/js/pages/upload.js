@@ -4,7 +4,7 @@ let thumbnailBlob = null;
 let videoFile = null;
 let quotaInfo = null;
 
-const GIB = 1024 * 1024 * 1024;
+const GB = 1000 * 1000 * 1000;
 
 export function renderUpload() {
   const main = document.getElementById('main');
@@ -95,9 +95,9 @@ async function loadQuota() {
   try {
     quotaInfo = await apiGet('/api/settings');
     if (!quotaInfo || !tip) return;
-    const singleGb = (quotaInfo.maxSingleVideoSize / GIB).toFixed(2);
-    const totalGb = (quotaInfo.maxTotalStorage / GIB).toFixed(2);
-    const usedGb = (quotaInfo.currentUsage / GIB).toFixed(2);
+    const singleGb = (quotaInfo.maxSingleVideoSize / GB).toFixed(2);
+    const totalGb = (quotaInfo.maxTotalStorage / GB).toFixed(2);
+    const usedGb = (quotaInfo.currentUsage / GB).toFixed(2);
     tip.textContent = `已用 ${usedGb} / ${totalGb} GB · 单文件 ≤ ${singleGb} GB`;
   } catch {
     if (tip) tip.textContent = '';
@@ -107,13 +107,13 @@ async function loadQuota() {
 function handleFileSelect(file, fileLabel, titleInput) {
   if (quotaInfo) {
     if (file.size > quotaInfo.maxSingleVideoSize) {
-      const limitGb = (quotaInfo.maxSingleVideoSize / GIB).toFixed(2);
+      const limitGb = (quotaInfo.maxSingleVideoSize / GB).toFixed(2);
       alert(`文件超过单文件限制 ${limitGb} GB`);
       return;
     }
     if (quotaInfo.currentUsage + file.size > quotaInfo.maxTotalStorage) {
-      const totalGb = (quotaInfo.maxTotalStorage / GIB).toFixed(2);
-      const usedGb = (quotaInfo.currentUsage / GIB).toFixed(2);
+      const totalGb = (quotaInfo.maxTotalStorage / GB).toFixed(2);
+      const usedGb = (quotaInfo.currentUsage / GB).toFixed(2);
       alert(`存储空间不足（已用 ${usedGb} / ${totalGb} GB）`);
       return;
     }
@@ -280,9 +280,9 @@ async function uploadFile(url, body, contentType) {
 }
 
 function formatSize(bytes) {
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+  if (bytes < 1000 * 1000) return (bytes / 1000).toFixed(1) + ' KB';
+  if (bytes < 1000 * 1000 * 1000) return (bytes / (1000 * 1000)).toFixed(1) + ' MB';
+  return (bytes / (1000 * 1000 * 1000)).toFixed(2) + ' GB';
 }
 
 function formatTime(seconds) {

@@ -25,5 +25,14 @@
   "vars": {
     "GITHUB_CLIENT_ID": "Ov23lih66al45HNDrEVz",
     "GITHUB_REDIRECT_URI": "https://video.ygking.top/api/auth/callback"
+  },
+  "triggers": {
+    "crons": ["0 * * * *"]
+  },
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
   }
 }

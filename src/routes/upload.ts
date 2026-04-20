@@ -28,17 +28,17 @@ upload.post('/presign', async (c) => {
 
   const [limits, currentUsage] = await Promise.all([
     getSettings(c.env.DB),
-    getCurrentUsage(c.env.DB),
+    getCurrentUsage(c.env),
   ]);
 
   if (body.fileSize > limits.maxSingleVideoSize) {
-    const limitGb = (limits.maxSingleVideoSize / (1024 * 1024 * 1024)).toFixed(2);
+    const limitGb = (limits.maxSingleVideoSize / (1000 * 1000 * 1000)).toFixed(2);
     return c.json({ error: `单文件大小不能超过 ${limitGb} GB` }, 400);
   }
 
   if (currentUsage + body.fileSize > limits.maxTotalStorage) {
-    const usedGb = (currentUsage / (1024 * 1024 * 1024)).toFixed(2);
-    const totalGb = (limits.maxTotalStorage / (1024 * 1024 * 1024)).toFixed(2);
+    const usedGb = (currentUsage / (1000 * 1000 * 1000)).toFixed(2);
+    const totalGb = (limits.maxTotalStorage / (1000 * 1000 * 1000)).toFixed(2);
     return c.json({ error: `存储空间不足（已用 ${usedGb} / ${totalGb} GB）` }, 400);
   }
 

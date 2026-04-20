@@ -7,6 +7,7 @@ export interface Env {
   R2_ACCESS_KEY_ID: string;
   R2_SECRET_ACCESS_KEY: string;
   CF_ACCOUNT_ID: string;
+  CF_API_TOKEN: string;
 }
 
 export interface Video {

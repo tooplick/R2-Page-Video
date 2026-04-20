@@ -54,3 +54,16 @@ export async function insertVideo(
 export async function deleteVideo(db: D1Database, id: string): Promise<void> {
   await db.prepare('DELETE FROM videos WHERE id = ?').bind(id).run();
 }
+
+export async function getAllR2Keys(db: D1Database): Promise<Set<string>> {
+  const rows = await db
+    .prepare('SELECT r2_key, thumbnail_r2_key FROM videos')
+    .all<{ r2_key: string; thumbnail_r2_key: string }>();
+
+  const keys = new Set<string>();
+  for (const row of rows.results) {
+    if (row.r2_key) keys.add(row.r2_key);
+    if (row.thumbnail_r2_key) keys.add(row.thumbnail_r2_key);
+  }
+  return keys;
+}

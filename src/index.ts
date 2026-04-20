@@ -5,6 +5,7 @@ import videos from './routes/videos';
 import upload from './routes/upload';
 import admin from './routes/admin';
 import settings from './routes/settings';
+import { cleanupOrphans } from './services/cleanup';
 import type { Env } from './types';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -64,4 +65,9 @@ app.onError((err, c) => {
   return c.json({ error: err.message || '服务器内部错误' }, 500);
 });
 
-export default app;
+export default {
+  fetch: app.fetch,
+  async scheduled(_event: ScheduledController, env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(cleanupOrphans(env));
+  },
+};
