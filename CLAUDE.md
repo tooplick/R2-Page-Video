@@ -38,7 +38,8 @@ Cloudflare Workers app serving a video hosting site. Two halves: a **Hono API ba
 
 `DESIGN.md` contains the Pinterest-inspired design spec. UI uses warm neutrals (#e5e5e0, #62625b), brand red (#e60023), 16px border-radius, no shadows. Reference this file before any UI changes.
 
-The home-page grid is **JS-distributed flex columns**, not CSS `column-count`: `public/js/pages/home.js` picks a column count from viewport width and round-robins cards into child `.masonry-column` divs, re-laying out on `resize`. This avoids the `column-fill: balance` quirk where small item counts get redistributed into fewer visible columns. Breakpoints (1/2/3/4/5/6 cols) live in `getColumnCount()` — not in CSS media queries.
+The home-page 
+grid is **JS-distributed flex columns**, not CSS `column-count`: `public/js/pages/home.js` picks a column count from viewport width and round-robins cards into child `.masonry-column` divs, re-laying out on `resize`. This avoids the `column-fill: balance` quirk where small item counts get redistributed into fewer visible columns. Breakpoints (1/2/3/4/5/6 cols) live in `getColumnCount()` — not in CSS media queries.
 
 ### Data Model
 
