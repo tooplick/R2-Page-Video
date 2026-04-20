@@ -702,12 +702,12 @@ main {
   }
 
   .site-header .nav-right {
-    flex-wrap: wrap;
-    gap: 6px;
+    gap: 4px;
   }
 
   .site-header .nav-right .btn {
-    white-space: nowrap;
+    padding: 4px 8px;
+    font-size: 11px;
   }
 
   .site-header .user-info {
