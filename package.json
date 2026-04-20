@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "db:init": "wrangler d1 execute r2-page-video-db --file=src/db/schema.sql"
+    "db:init": "wrangler d1 execute r2-page-video-db --file=src/db/schema.sql",
+    "login": "wrangler login",
+    "log": "wrangler tail"
   },
   "repository": {
     "type": "git",
