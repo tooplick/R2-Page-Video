@@ -45,7 +45,14 @@ export async function renderVideo(id) {
     `;
 
     const videoEl = main.querySelector('video');
-    if (videoEl) setupMediaSession(videoEl, video);
+    if (videoEl) {
+      videoEl.addEventListener('loadedmetadata', () => {
+        if (videoEl.videoWidth && videoEl.videoHeight) {
+          videoEl.parentElement.style.aspectRatio = `${videoEl.videoWidth} / ${videoEl.videoHeight}`;
+        }
+      }, { once: true });
+      setupMediaSession(videoEl, video);
+    }
 
     if (isOwner) {
       document.getElementById('delete-btn').addEventListener('click', async () => {

@@ -10,7 +10,6 @@ export function createVideoCard(video) {
     <img class="pin-image"
          src="${video.thumbnail_r2_key ? `/api/videos/${video.id}/thumbnail` : ''}"
          alt="${video.title}"
-         onerror="this.style.background='var(--surface-sand)';this.style.minHeight='180px'"
          loading="lazy">
     <button class="pin-save-btn" onclick="event.stopPropagation();window.location.href='/api/videos/${video.id}/download'">下载</button>
     <div class="pin-info">

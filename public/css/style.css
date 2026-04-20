@@ -298,7 +298,8 @@ main {
   display: block;
   border-radius: var(--radius-md);
   background: var(--surface-sand);
-  min-height: 120px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
 }
 
 .pin-card .pin-overlay {
@@ -393,11 +394,13 @@ main {
 
 .video-player-wrapper {
   width: 100%;
-  aspect-ratio: 16/9;
+  max-width: 100%;
+  max-height: 85vh;
+  aspect-ratio: 16 / 9;
   background: #000;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  margin-bottom: 20px;
+  margin: 0 auto 20px;
 }
 
 .video-player-wrapper video {
