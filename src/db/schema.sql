@@ -23,5 +23,5 @@ CREATE TABLE IF NOT EXISTS settings (
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-INSERT OR IGNORE INTO settings (key, value) VALUES ('max_single_video_size', '1073741824');
-INSERT OR IGNORE INTO settings (key, value) VALUES ('max_total_storage', '10200547328');
+INSERT OR IGNORE INTO settings (key, value) VALUES ('max_single_video_size', '1000000000');
+INSERT OR IGNORE INTO settings (key, value) VALUES ('max_total_storage', '9900000000');

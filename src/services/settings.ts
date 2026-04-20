@@ -1,8 +1,5 @@
-import { getR2StorageSize } from './r2-analytics';
-import type { Env } from '../types';
-
-export const DEFAULT_MAX_SINGLE_VIDEO_SIZE = 1073741824;
-export const DEFAULT_MAX_TOTAL_STORAGE = 10200547328;
+export const DEFAULT_MAX_SINGLE_VIDEO_SIZE = 1_000_000_000;
+export const DEFAULT_MAX_TOTAL_STORAGE = 9_900_000_000;
 
 export interface UploadLimits {
   maxSingleVideoSize: number;
@@ -52,22 +49,11 @@ export async function updateSettings(
   await Promise.all(ops);
 }
 
-export async function getCurrentUsage(env: Env): Promise<number> {
-  try {
-    return await getR2StorageSize(env.CF_ACCOUNT_ID, env.CF_API_TOKEN);
-  } catch (err) {
-    console.warn('[settings] R2 analytics failed, falling back to R2.list', err);
-    let total = 0;
-    let cursor: string | undefined;
-    do {
-      const page = await env.R2_BUCKET.list({ cursor, limit: 1000 });
-      for (const obj of page.objects) {
-        total += obj.size;
-      }
-      cursor = page.truncated ? page.cursor : undefined;
-    } while (cursor);
-    return total;
-  }
+export async function getCurrentUsage(db: D1Database): Promise<number> {
+  const row = await db
+    .prepare('SELECT COALESCE(SUM(file_size), 0) as total FROM videos')
+    .first<{ total: number }>();
+  return row?.total ?? 0;
 }
 
 export async function getAdminUserId(db: D1Database): Promise<number | null> {

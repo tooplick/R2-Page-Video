@@ -43,8 +43,8 @@ app.use('/api/*', async (c, next) => {
           value TEXT NOT NULL,
           updated_at TEXT NOT NULL DEFAULT (datetime('now'))
         )`),
-        c.env.DB.prepare(`INSERT OR IGNORE INTO settings (key, value) VALUES ('max_single_video_size', '1073741824')`),
-        c.env.DB.prepare(`INSERT OR IGNORE INTO settings (key, value) VALUES ('max_total_storage', '10200547328')`),
+        c.env.DB.prepare(`INSERT OR IGNORE INTO settings (key, value) VALUES ('max_single_video_size', '1000000000')`),
+        c.env.DB.prepare(`INSERT OR IGNORE INTO settings (key, value) VALUES ('max_total_storage', '9900000000')`),
       ]);
     } catch {
       // already exists

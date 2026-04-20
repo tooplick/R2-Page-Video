@@ -28,7 +28,7 @@ upload.post('/presign', async (c) => {
 
   const [limits, currentUsage] = await Promise.all([
     getSettings(c.env.DB),
-    getCurrentUsage(c.env),
+    getCurrentUsage(c.env.DB),
   ]);
 
   if (body.fileSize > limits.maxSingleVideoSize) {

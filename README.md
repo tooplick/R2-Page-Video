@@ -5,10 +5,7 @@
 ## 功能
 
 - **视频上传** — 客户端直传 R2（预签名 URL）绕过 Worker 100MB 请求体上限
-- **可配置配额** — 管理员可在线调整「单文件大小上限」与「总存储空间上限」（默认 1.07 GB / 10.20 GB）
-- **精确存储统计** — 「已用空间」通过 Cloudflare GraphQL Analytics API 实时查询 R2，和 CF Dashboard 的桶大小一致
-- **孤儿文件自动清理** — Cron Trigger 每小时扫描 R2，删除 1h 前上传但 D1 无记录的孤儿文件（上传中断、网络失败时产生）
-- **视频播放** — HTML5 播放器 + Range 请求，播放页按视频真实比例渲染（横屏/竖屏自适应）
+- **可配置配额** — 管理员可在线调整「单文件大小上限」与「总存储空间上限」（默认 1.00 GB / 9.9 GB）
 - **GitHub OAuth 登录 / 游客模式** — 完整功能需 GitHub 登录；游客可只读浏览
 - **自声明管理员** — 首个登录后访问 `#/admin` 的用户自动成为管理员，之后仅管理员能调整配额
 
@@ -24,7 +21,6 @@
 | 认证 | GitHub OAuth + 自签 JWT（HttpOnly Cookie） |
 | 大文件上传 | aws4fetch 预签名 PUT URL |
 | 定时任务 | Cloudflare Cron Triggers（每小时） |
-| 存储分析 | Cloudflare GraphQL Analytics API |
 
 ## 部署
 
@@ -66,16 +62,7 @@ npx wrangler d1 execute r2-page-video-db --file=src/db/schema.sql
 
 在 Cloudflare Dashboard → R2 → 管理 API 令牌，创建一个具有读写权限的 S3 兼容 API Token。
 
-### 6. 创建 Cloudflare API Token（用于查询存储用量）
-
-在 Cloudflare Dashboard → My Profile → API Tokens → Create Token → Custom token：
-
-- **Permissions**: `Account → Account Analytics → Read`
-- **Account Resources**: 你的账号
-
-这个 token 用来调 GraphQL Analytics API 获取实时桶大小，和 R2 S3 API Token 是两个不同的 token。
-
-### 7. 配置 R2 CORS
+### 6. 配置 R2 CORS
 
 在 Cloudflare Dashboard → R2 → 存储桶 → 设置 → CORS 策略：
 
@@ -90,7 +77,7 @@ npx wrangler d1 execute r2-page-video-db --file=src/db/schema.sql
 ]
 ```
 
-### 8. 设置 Secrets
+### 7. 设置 Secrets
 
 ```bash
 npx wrangler secret put GITHUB_CLIENT_SECRET
@@ -98,10 +85,9 @@ npx wrangler secret put JWT_SECRET
 npx wrangler secret put R2_ACCESS_KEY_ID
 npx wrangler secret put R2_SECRET_ACCESS_KEY
 npx wrangler secret put CF_ACCOUNT_ID
-npx wrangler secret put CF_API_TOKEN
 ```
 
-### 9. 部署
+### 8. 部署
 
 ```bash
 npm run deploy
@@ -109,7 +95,7 @@ npm run deploy
 
 部署后 `wrangler.jsonc` 里的 `triggers.crons: ["0 * * * *"]` 会自动生效——每小时整点触发一次 R2 孤儿文件清理。也可以 admin 身份手动调 `POST /api/admin/cleanup-orphans` 立即清理。
 
-### 10. 认领管理员
+### 9. 认领管理员
 
 部署后用 GitHub 登录，手动访问 `https://<your-domain>/#/admin` 即自动成为管理员，头部出现「管理」入口，可在线调整配额。
 
@@ -131,7 +117,7 @@ npx tsc --noEmit
 npx wrangler tail
 ```
 
-`.dev.vars` 需要包含所有 secrets（包括 `CF_API_TOKEN`），否则本地调试时存储用量查询会走 R2.list 兜底。
+`.dev.vars` 需要包含所有 secrets。
 
 ## 项目结构
 
@@ -162,7 +148,6 @@ npx wrangler tail
 │   │   ├── jwt.ts             # Web Crypto HMAC-SHA256 自签
 │   │   ├── d1.ts              # videos 表 CRUD + getAllR2Keys 用于清理
 │   │   ├── r2.ts              # 预签名 URL + Range 解析
-│   │   ├── r2-analytics.ts    # CF GraphQL Analytics 查询 R2 桶大小
 │   │   ├── cleanup.ts         # 孤儿文件扫描清理（R2 vs D1 差集）
 │   │   └── settings.ts        # 配额读写、用量统计、管理员认领
 │   └── db/schema.sql          # videos + settings 表
