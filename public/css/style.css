@@ -706,6 +706,10 @@ main {
     gap: 6px;
   }
 
+  .site-header .nav-right .btn {
+    white-space: nowrap;
+  }
+
   .site-header .user-info {
     order: 1;
   }
