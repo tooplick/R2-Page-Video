@@ -687,13 +687,35 @@ main {
   to { transform: rotate(360deg); }
 }
 
-/* ========== Responsive: Masonry Columns ========== */
+/* ========== Responsive: Header & Masonry ========== */
 @media (max-width: 576px) {
   main {
     padding: 8px 8px 24px;
   }
+
   .site-header {
-    padding: 0 8px;
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .site-header .nav-right {
+    gap: 4px;
+  }
+
+  .site-header .nav-right .btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .site-header .user-info {
+    order: 1;
+  }
+
+  .masonry-column {
+    min-width: 0;
   }
 }
 
