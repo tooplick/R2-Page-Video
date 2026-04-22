@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
-import { authRequired } from '../middleware/auth';
-import { listVideos, getVideoById, deleteVideo } from '../services/d1';
+import { authRequired, notGuest } from '../middleware/auth';
+import { listVideos, getVideoById, updateVideo, deleteVideo } from '../services/d1';
+import { getAdminUserId } from '../services/settings';
 import { parseRange } from '../services/r2';
 import type { Env, JwtPayload } from '../types';
 
@@ -105,6 +106,38 @@ videos.get('/:id/thumbnail', async (c) => {
   });
 });
 
+videos.put('/:id', notGuest, async (c) => {
+  const user = c.get('user');
+  const body = await c.req.json<{ title?: string; description?: string }>();
+
+  const title = (body.title || '').trim();
+  if (!title) {
+    return c.json({ error: '标题不能为空' }, 400);
+  }
+  if (title.length > 200) {
+    return c.json({ error: '标题不能超过200个字符' }, 400);
+  }
+  const description = (body.description || '').trim();
+  if (description.length > 5000) {
+    return c.json({ error: '描述不能超过5000个字符' }, 400);
+  }
+
+  const video = await getVideoById(c.env.DB, c.req.param('id'));
+  if (!video) {
+    return c.json({ error: '视频不存在' }, 404);
+  }
+  if (video.uploader_github_id !== user.sub) {
+    const adminId = await getAdminUserId(c.env.DB);
+    if (adminId !== user.sub) {
+      return c.json({ error: '无权编辑此视频' }, 403);
+    }
+  }
+
+  await updateVideo(c.env.DB, video.id, { title, description });
+  const updated = await getVideoById(c.env.DB, video.id);
+  return c.json(updated);
+});
+
 videos.delete('/:id', async (c) => {
   const user = c.get('user');
   const video = await getVideoById(c.env.DB, c.req.param('id'));
@@ -113,7 +146,10 @@ videos.delete('/:id', async (c) => {
     return c.json({ error: '视频不存在' }, 404);
   }
   if (video.uploader_github_id !== user.sub) {
-    return c.json({ error: '无权删除此视频' }, 403);
+    const adminId = await getAdminUserId(c.env.DB);
+    if (adminId !== user.sub) {
+      return c.json({ error: '无权删除此视频' }, 403);
+    }
   }
 
   await c.env.R2_BUCKET.delete(video.r2_key);

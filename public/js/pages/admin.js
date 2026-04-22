@@ -54,12 +54,12 @@ function renderError(main, message) {
 function renderNoAccess(main) {
   main.innerHTML = `
     <div class="admin-page">
-      <a href="#/" class="back-link">${BACK_ICON}<span>返回首页</span></a>
       <div class="no-access">
         <div class="no-access-icon">${LOCK_ICON}</div>
         <h2>无权访问</h2>
         <p>管理员已设置，只有管理员可以查看此页面。</p>
       </div>
+      <a href="#/" class="back-link">${BACK_ICON}<span>返回首页</span></a>
     </div>
   `;
 }
@@ -73,7 +73,6 @@ function renderForm(main, data, newlyClaimed) {
 
   main.innerHTML = `
     <div class="admin-page">
-      <a href="#/" class="back-link">${BACK_ICON}<span>返回首页</span></a>
       <header class="admin-header">
         <h1>设置</h1>
         <p class="admin-subtitle">配置上传限额与查看存储使用情况</p>
@@ -118,7 +117,10 @@ function renderForm(main, data, newlyClaimed) {
             <p class="form-hint">所有视频累计占用上限</p>
           </div>
           <p class="settings-status" id="settings-status"></p>
-          <button type="submit" class="btn btn-primary" id="save-btn" style="margin-top:20px;padding:10px 20px;font-size:14px;font-weight:700;">保存</button>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="save-btn">保存</button>
+            <a href="#/" class="back-link">${BACK_ICON}<span>返回首页</span></a>
+          </div>
         </form>
       </section>
     </div>
@@ -147,8 +149,7 @@ function renderForm(main, data, newlyClaimed) {
         maxSingleVideoSize: Math.floor(singleGbVal * GB),
         maxTotalStorage: Math.floor(totalGbVal * GB),
       });
-      status.textContent = '已保存';
-      status.className = 'settings-status success';
+      showToast('已保存');
     } catch (err) {
       status.textContent = '保存失败：' + err.message;
       status.className = 'settings-status error';
@@ -157,4 +158,20 @@ function renderForm(main, data, newlyClaimed) {
       btn.textContent = '保存';
     }
   });
+}
+
+function showToast(message) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('toast-visible'));
+
+  setTimeout(() => {
+    toast.classList.remove('toast-visible');
+    toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+  }, 2000);
 }

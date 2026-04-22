@@ -490,6 +490,15 @@ main {
   line-height: 1.5;
 }
 
+.edit-title-group {
+  margin-bottom: 10px;
+}
+
+.edit-desc-group {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
 /* ========== Upload Page ========== */
 .upload-page {
   max-width: 560px;
@@ -899,13 +908,11 @@ main {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-top: 8px;
+  margin-top: 20px;
 }
 
-.form-actions .btn-primary {
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 700;
+.form-actions .back-link {
+  margin-bottom: 0;
 }
 
 .settings-status {
@@ -1048,4 +1055,26 @@ main {
 .modal-btn:focus-visible {
   outline: 2px solid var(--focus-blue);
   outline-offset: 2px;
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  opacity: 0;
+  background: var(--text-primary);
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 9999;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.toast-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }

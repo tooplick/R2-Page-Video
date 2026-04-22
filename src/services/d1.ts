@@ -51,6 +51,19 @@ export async function insertVideo(
     .run();
 }
 
+export async function updateVideo(
+  db: D1Database,
+  id: string,
+  data: { title: string; description: string }
+): Promise<void> {
+  await db
+    .prepare(
+      `UPDATE videos SET title = ?, description = ?, updated_at = datetime('now') WHERE id = ?`
+    )
+    .bind(data.title, data.description, id)
+    .run();
+}
+
 export async function deleteVideo(db: D1Database, id: string): Promise<void> {
   await db.prepare('DELETE FROM videos WHERE id = ?').bind(id).run();
 }

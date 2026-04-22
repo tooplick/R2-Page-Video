@@ -1,5 +1,5 @@
-import { apiGet, apiDelete } from '../api.js';
-import { getUser } from '../auth.js';
+import { apiGet, apiPut, apiDelete } from '../api.js';
+import { getUser, isAdmin } from '../auth.js';
 import { showConfirm } from '../components/modal.js';
 
 const DEFAULT_TITLE = 'VideoHub';
@@ -14,6 +14,7 @@ export async function renderVideo(id) {
 
     const user = getUser();
     const isOwner = user && user.id === video.uploader_github_id;
+    const canManage = isOwner || isAdmin();
     const sizeStr = formatFileSize(video.file_size);
     const dateStr = new Date(video.created_at + 'Z').toLocaleString('zh-CN');
 
@@ -38,7 +39,7 @@ export async function renderVideo(id) {
           <div class="video-actions">
             <a href="/api/videos/${video.id}/download" class="btn btn-primary">下载视频</a>
             <a href="#/" class="btn btn-secondary">返回首页</a>
-            ${isOwner ? '<button class="btn btn-danger" id="delete-btn">删除</button>' : ''}
+            ${canManage ? '<button class="btn btn-secondary" id="edit-btn">编辑</button><button class="btn btn-danger" id="delete-btn">删除</button>' : ''}
           </div>
         </div>
         ${video.description ? `<div class="video-description">${escapeHtml(video.description)}</div>` : ''}
@@ -55,7 +56,10 @@ export async function renderVideo(id) {
       setupMediaSession(videoEl, video);
     }
 
-    if (isOwner) {
+    if (canManage) {
+      document.getElementById('edit-btn').addEventListener('click', () => {
+        enterEditMode(video);
+      });
       document.getElementById('delete-btn').addEventListener('click', async () => {
         const confirmed = await showConfirm({
           title: '删除这个视频？',
@@ -169,4 +173,84 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+function escapeAttr(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function enterEditMode(video) {
+  const h1 = document.querySelector('.video-info h1');
+  const descDiv = document.querySelector('.video-description');
+  const actionsDiv = document.querySelector('.video-actions');
+
+  const titleGroup = document.createElement('div');
+  titleGroup.className = 'form-group edit-title-group';
+  titleGroup.innerHTML = `
+    <label>标题</label>
+    <input type="text" id="edit-title" value="${escapeAttr(video.title)}" maxlength="200">
+  `;
+  h1.replaceWith(titleGroup);
+
+  if (descDiv) descDiv.remove();
+
+  const descGroup = document.createElement('div');
+  descGroup.className = 'form-group edit-desc-group';
+  descGroup.innerHTML = `
+    <label>描述</label>
+    <textarea id="edit-desc" placeholder="添加描述（可选）" maxlength="5000">${escapeHtml(video.description || '')}</textarea>
+  `;
+  titleGroup.insertAdjacentElement('afterend', descGroup);
+
+  actionsDiv.innerHTML = `
+    <button class="btn btn-primary" id="save-edit-btn">保存</button>
+    <button class="btn btn-secondary" id="cancel-edit-btn">取消</button>
+  `;
+
+  document.getElementById('edit-title').focus();
+
+  document.getElementById('save-edit-btn').addEventListener('click', async () => {
+    const title = document.getElementById('edit-title').value.trim();
+    if (!title) {
+      alert('标题不能为空');
+      return;
+    }
+    const description = document.getElementById('edit-desc').value.trim();
+
+    const saveBtn = document.getElementById('save-edit-btn');
+    const cancelBtn = document.getElementById('cancel-edit-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = '保存中...';
+    cancelBtn.disabled = true;
+
+    try {
+      await apiPut(`/api/videos/${video.id}`, { title, description });
+      await renderVideo(video.id);
+    } catch (e) {
+      alert('保存失败：' + e.message);
+      saveBtn.disabled = false;
+      saveBtn.textContent = '保存';
+      cancelBtn.disabled = false;
+    }
+  });
+
+  document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+    renderVideo(video.id);
+  });
+
+  const handleKeyDown = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('save-edit-btn').click();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      document.getElementById('cancel-edit-btn').click();
+    }
+  };
+  document.getElementById('edit-title').addEventListener('keydown', handleKeyDown);
+  document.getElementById('edit-desc').addEventListener('keydown', handleKeyDown);
 }
